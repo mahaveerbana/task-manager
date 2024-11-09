@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Register.css';
 import { post, setToken } from '../services/sendRequest';
@@ -18,6 +18,36 @@ function Register() {
   const navigate = useNavigate();
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  useEffect(() => {
+    window.google.accounts.id.initialize({
+      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+      callback: handleGoogleResponse,
+    });
+    window.google.accounts.id.renderButton(
+      document.getElementById('google-login-button'),
+      { theme: 'outline', size: 'large' }
+    );
+  }, []);
+
+  const handleGoogleResponse = async (response) => {
+    const token = response.credential;
+    setLoading(true);
+    try {
+      const res = await post('/auth/google', { token });
+      if (res.status === 'SUCCESS') {
+        localStorage.setItem('accessToken', res.token);
+        setToken(res.token);
+        navigate('/task-manager');
+      } else {
+        setError(res.errorMessage || 'Google login failed. Please try again.');
+      }
+      setLoading(false)
+    } catch (error) {
+      setError('An error occurred. Please try again later.');
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -66,7 +96,7 @@ function Register() {
 
       if (response.status === 'SUCCESS') {
         localStorage.setItem('accessToken', response.token);
-        setToken(response.token)
+        setToken(response.token);
         navigate('/task-manager');
       } else {
         setError(response.errorMessage || 'Registration failed');
@@ -145,9 +175,9 @@ function Register() {
           Already have an account?{' '}
           <a style={{ color: "#0473f2" }} href="/login">Login</a>
         </p>
-        <button className="google-login-button">
-          Signup with Google
-        </button>
+
+        {/* Google Login Button */}
+        <div id="google-login-button" style={{ marginTop: '1em' }}></div>
       </div>
     </div>
   );
