@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import '../styles/TaskManager.css';
+import '../styles/TaskBoard.css';
 import TaskColumn from '../components/TaskColumn';
 import SearchAndSort from '../components/SearchAndSort';
 import TaskModal from '../components/TaskModal';
@@ -85,6 +85,23 @@ const TaskBoard = () => {
     }
   };
 
+  // Search and Sort Logic
+  const filteredTasks = tasks
+    .filter(task => 
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      task.description.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (sortBy === 'recent') {
+        return new Date(b.createdAt) - new Date(a.createdAt); // Recent first
+      } else if (sortBy === 'oldest') {
+        return new Date(a.createdAt) - new Date(b.createdAt); // Oldest first
+      } else if (sortBy === 'name') {
+        return a.title.localeCompare(b.title); // Alphabetical order
+      }
+      return 0; // Default sorting if no match
+    });
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="task-board">
@@ -109,21 +126,21 @@ const TaskBoard = () => {
             refreshTasks={fetchTasks}
             title="TODO"
             status="TODO"
-            tasks={tasks.filter(task => task.status === 'TODO')}
+            tasks={filteredTasks.filter(task => task.status === 'TODO')}
             moveTask={moveTask}
           />
           <TaskColumn
             refreshTasks={fetchTasks}
             title="IN PROGRESS"
             status="IN_PROGRESS"
-            tasks={tasks.filter(task => task.status === 'IN_PROGRESS')}
+            tasks={filteredTasks.filter(task => task.status === 'IN_PROGRESS')}
             moveTask={moveTask}
           />
           <TaskColumn
             refreshTasks={fetchTasks}
             title="DONE"
             status="DONE"
-            tasks={tasks.filter(task => task.status === 'DONE')}
+            tasks={filteredTasks.filter(task => task.status === 'DONE')}
             moveTask={moveTask}
           />
         </div>
