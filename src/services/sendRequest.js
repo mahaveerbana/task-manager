@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Set up base API URL and access token
-const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const apiUrl = process.env.REACT_APP_API_URL || 'https://task-manager-api-gw23.onrender.com/api';
 const token = localStorage.getItem('accessToken');
 
 // Create Axios instance with default headers
